@@ -1,0 +1,7 @@
+# ninja log v5
+1	11671	7303779413271338	operator.o	54f7c29d177d4ee5
+60	31528	7303779611564279	assign_score_withk_halfkernel_gpu.cuda.o	a23c2928a630549a
+7	31701	7303779613344135	assign_score_withk_gpu.cuda.o	da60638739c43dad
+58	13449	7325502411520640	operator.o	1c58bc98079d649c
+68	36850	7325502645279101	assign_score_withk_gpu.cuda.o	73cedb927b3d12ff
+131	36897	7325502645805027	assign_score_withk_halfkernel_gpu.cuda.o	eb41db963b9ec011

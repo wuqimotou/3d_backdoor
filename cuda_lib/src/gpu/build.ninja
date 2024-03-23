@@ -1,0 +1,35 @@
+ninja_required_version = 1.3
+cxx = cl
+nvcc = C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.3\bin\nvcc
+
+cflags = -DTORCH_EXTENSION_NAME=gpconv_cuda -DTORCH_API_INCLUDE_EXTENSION_H -IC:\anaconda3\envs\pytorch2.0.1\Lib\site-packages\torch\include -IC:\anaconda3\envs\pytorch2.0.1\Lib\site-packages\torch\include\torch\csrc\api\include -IC:\anaconda3\envs\pytorch2.0.1\Lib\site-packages\torch\include\TH -IC:\anaconda3\envs\pytorch2.0.1\Lib\site-packages\torch\include\THC "-IC:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.3\include" -IC:\anaconda3\envs\pytorch2.0.1\Include -D_GLIBCXX_USE_CXX11_ABI=0 /MD /wd4819 /wd4251 /wd4244 /wd4267 /wd4275 /wd4018 /wd4190 /EHsc
+post_cflags = 
+cuda_cflags = -Xcudafe --diag_suppress=dll_interface_conflict_dllexport_assumed -Xcudafe --diag_suppress=dll_interface_conflict_none_assumed -Xcudafe --diag_suppress=field_without_dll_interface -Xcudafe --diag_suppress=base_class_has_different_dll_interface -Xcompiler /EHsc -Xcompiler /wd4190 -Xcompiler /wd4018 -Xcompiler /wd4275 -Xcompiler /wd4267 -Xcompiler /wd4244 -Xcompiler /wd4251 -Xcompiler /wd4819 -Xcompiler /MD -DTORCH_EXTENSION_NAME=gpconv_cuda -DTORCH_API_INCLUDE_EXTENSION_H -IC:\anaconda3\envs\pytorch2.0.1\Lib\site-packages\torch\include -IC:\anaconda3\envs\pytorch2.0.1\Lib\site-packages\torch\include\torch\csrc\api\include -IC:\anaconda3\envs\pytorch2.0.1\Lib\site-packages\torch\include\TH -IC:\anaconda3\envs\pytorch2.0.1\Lib\site-packages\torch\include\THC "-IC:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.3\include" -IC:\anaconda3\envs\pytorch2.0.1\Include -D_GLIBCXX_USE_CXX11_ABI=0 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_89,code=compute_89 -gencode=arch=compute_89,code=sm_89
+cuda_post_cflags = 
+cuda_dlink_post_cflags = 
+ldflags = /DLL c10.lib c10_cuda.lib torch_cpu.lib torch_cuda.lib -INCLUDE:?warp_size@cuda@at@@YAHXZ torch.lib /LIBPATH:C:\anaconda3\envs\pytorch2.0.1\Lib\site-packages\torch\lib torch_python.lib /LIBPATH:C:\anaconda3\envs\pytorch2.0.1\libs "/LIBPATH:C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.3\lib\x64" cudart.lib
+
+rule compile
+  command = cl /showIncludes $cflags -c $in /Fo$out $post_cflags
+  deps = msvc
+
+rule cuda_compile
+  depfile = $out.d
+  deps = gcc
+  command = $nvcc --generate-dependencies-with-compile --dependency-output $out.d $cuda_cflags -c $in -o $out $cuda_post_cflags
+
+
+
+rule link
+  command = "C$:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\bin\Hostx64\x64/link.exe" $in /nologo $ldflags /out:$out
+
+build operator.o: compile C$:\Users\xzy19\Desktop\Sl-backdoor\cuda_lib\src\gpu\operator.cpp
+build assign_score_withk_gpu.cuda.o: cuda_compile C$:\Users\xzy19\Desktop\Sl-backdoor\cuda_lib\src\gpu\assign_score_withk_gpu.cu
+build assign_score_withk_halfkernel_gpu.cuda.o: cuda_compile C$:\Users\xzy19\Desktop\Sl-backdoor\cuda_lib\src\gpu\assign_score_withk_halfkernel_gpu.cu
+
+
+
+build gpconv_cuda.pyd: link operator.o assign_score_withk_gpu.cuda.o assign_score_withk_halfkernel_gpu.cuda.o
+
+default gpconv_cuda.pyd
+
